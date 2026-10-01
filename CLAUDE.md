@@ -117,6 +117,30 @@ planificateur GitHub** garantissent la publication :
 > sauter à GitHub le cycle suivant. Le garde-fou anti-doublon rend tout
 > déclenchement supplémentaire (manuel, filet, externe) sans danger.
 
+### Alerte de publication manquante (depuis 2026-10-01)
+Les filets ci-dessus RELANCENT la publication ; `scripts/publish_alert.js`
+PRÉVIENT quand elle n'est pas partie malgré tout (token Instagram expiré, API
+Meta en panne…). Il vérifie le même signal que le garde-fou anti-doublon — un
+commit du jour (UTC) sur `tracker.json` (post) et `reels/posted_reels.json`
+(reel) — et, si l'un manque, envoie un e-mail à soi-même via Outlook avec les
+liens des runs en échec du jour.
+
+- Passe par la CLI **Composio** (`~/.local/bin/composio`, compte
+  `realnajim@hotmail.com`) avec deux comptes liés : `composio link github` et
+  `composio link outlook`. Aucun secret dans le dépôt ; les accès OAuth sont
+  gérés côté Composio. État des liaisons : `composio connections list`.
+- **Lancement manuel uniquement** (pas de planification, choix du 2026-10-01),
+  depuis la racine du dépôt :
+  ```bash
+  composio run -f scripts/publish_alert.js              # le soir (≥ 20h Paris)
+  composio run -f scripts/publish_alert.js -- --print   # aperçu, sans envoi
+  composio run -f scripts/publish_alert.js -- --force   # ignore la garde horaire
+  composio run -f scripts/publish_alert.js -- --test    # envoie un e-mail de test
+  ```
+- Garde horaire : avant 20h Paris le script s'arrête sans rien faire (les
+  publications ne sont pas encore censées être parties) ; `--print` l'ignore aussi.
+- Si tout est publié : aucun e-mail, juste une ligne de log.
+
 ## Règles de travail (IMPORTANT)
 - **Rigueur islamique** : ne jamais inventer ni saisir de mémoire un verset, un
   hadith ou une parole du Salaf. Toujours passer par une source authentifiée
