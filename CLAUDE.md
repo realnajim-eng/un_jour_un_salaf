@@ -117,6 +117,16 @@ planificateur GitHub** garantissent la publication :
 > sauter à GitHub le cycle suivant. Le garde-fou anti-doublon rend tout
 > déclenchement supplémentaire (manuel, filet, externe) sans danger.
 
+### Panne « API access blocked » = compte Facebook désactivé
+Si post ET reel échouent avec `{'message': 'API access blocked.', 'code': 200}`
+dès `refresh_access_token`, ni le code ni le token ne sont en cause : Meta
+bloque l'API parce que le compte Facebook de Najim (unique admin de l'app Meta
+SalafPost, qui émet `INSTAGRAM_ACCESS_TOKEN`) est désactivé. Observé du 21 au
+23/09/2026 puis du 08 au 09/10/2026. Remède : Najim se reconnecte à Facebook
+(réactivation), puis `gh workflow run daily_post.yml` et `daily_reel.yml` si
+rien n'est parti ce jour-là. Pour quitter Facebook sans casser le bot, ajouter
+d'abord un second admin à l'app SalafPost.
+
 ### Alerte de publication manquante (depuis 2026-10-01)
 Les filets ci-dessus RELANCENT la publication ; `scripts/publish_alert.js`
 PRÉVIENT quand elle n'est pas partie malgré tout (token Instagram expiré, API
