@@ -43,7 +43,24 @@ jobs:
 
       - name: Vérifier qu'aucun post n'a déjà été publié aujourd'hui
         id: guard
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
+          # 1) Créneau horaire (runs planifiés seulement). Les crons de rattrapage
+          #    subissent parfois 2-3h de retard et franchissent minuit UTC : le
+          #    run voyait alors un « nouveau jour », publiait vers 01h30 Paris,
+          #    et la publication de 17h17 du même jour était ensuite ignorée
+          #    (observé du 10 au 14/11/2026). Un run planifié qui démarre avant
+          #    15h UTC est donc un retardataire de la veille : on l'ignore.
+          #    Les déclenchements manuels/externes (workflow_dispatch) ne sont
+          #    pas concernés.
+          HOUR=$((10#$(date -u +%H)))
+          if [ "$EVENT_NAME" = "schedule" ] && [ "$HOUR" -lt 15 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "⏭️  Run planifié arrivé hors créneau (${HOUR}h UTC < 15h) — retardataire de la veille, ignoré."
+            exit 0
+          fi
+          # 2) Anti-doublon : un commit du jour (UTC) sur le tracker = déjà publié.
           LAST_DATE=$(git log -1 --format=%cd --date=format:%Y-%m-%d -- tracker.json)
           TODAY=$(date -u +%Y-%m-%d)
           if [ "$LAST_DATE" = "$TODAY" ]; then
@@ -58,6 +75,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install dependencies
         if: steps.guard.outputs.skip != 'true'

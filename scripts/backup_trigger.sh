@@ -31,23 +31,24 @@ fi
 # Les workflows raisonnent en UTC pour la date « du jour ».
 TODAY=$(date -u +%Y-%m-%d)
 
+# Signal « publié » = un commit du jour (UTC) sur le tracker, exactement comme
+# le garde-fou anti-doublon des workflows. (Un run « success » ne prouve rien :
+# un run ignoré par le garde-fou se termine lui aussi en success.)
 check_and_trigger() {
-  local wf="$1" label="$2"
-  local ok
-  ok=$("$GH" run list --repo "$REPO" --workflow="$wf" --limit 30 \
-        --json conclusion,createdAt \
-        --jq "[.[] | select(.createdAt | startswith(\"$TODAY\")) | select(.conclusion==\"success\")] | length") \
+  local wf="$1" label="$2" tracker="$3"
+  local n
+  n=$("$GH" api "repos/$REPO/commits?path=$tracker&since=${TODAY}T00:00:00Z&per_page=1" --jq 'length') \
     || { echo "$(date '+%F %T') · [$label] gh injoignable — abandon."; return 0; }
 
-  if [ "${ok:-0}" -gt 0 ]; then
-    echo "$(date '+%F %T') · [$label] déjà publié aujourd'hui ($ok run(s) OK) — rien à faire."
+  if [ "${n:-0}" -gt 0 ]; then
+    echo "$(date '+%F %T') · [$label] déjà publié aujourd'hui — rien à faire."
   else
-    echo "$(date '+%F %T') · [$label] AUCUN run réussi aujourd'hui — déclenchement de secours."
+    echo "$(date '+%F %T') · [$label] AUCUNE publication aujourd'hui — déclenchement de secours."
     "$GH" workflow run "$wf" --repo "$REPO" \
       && echo "$(date '+%F %T') · [$label] déclenché." \
       || echo "$(date '+%F %T') · [$label] échec du déclenchement."
   fi
 }
 
-check_and_trigger daily_post.yml "post"
-check_and_trigger daily_reel.yml "reel"
+check_and_trigger daily_post.yml "post" "tracker.json"
+check_and_trigger daily_reel.yml "reel" "reels/posted_reels.json"

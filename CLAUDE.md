@@ -64,6 +64,14 @@ normaux dans l'historique, certains peuvent apparaître « cancelled » à cause
 groupe `concurrency: instagram-publish` partagé qui sérialise toutes les
 publications). Les crons sont en UTC fixe → dérive d'1h en heure d'hiver (CET)
 sans ajustement.
+
+**Garde-fou horaire (depuis 2026-11-14)** : un run `schedule` qui démarre avant
+15h UTC (post) / 17h UTC (reel) est un rattrapage de la veille arrivé après
+minuit UTC — il est ignoré. Sans ça il voyait un « nouveau jour », publiait
+vers 01h30 Paris, et la publication de 17h17/19h19 du même jour était ensuite
+sautée (observé du 10 au 14/11/2026). `workflow_dispatch` (manuel, cron-job.org,
+filet macOS) n'est pas concerné : il publie à toute heure.
+
 `daily_alternate.yml` (ancienne alternance Salaf/reel via `post_state.json`) est
 remplacé et **entièrement désactivé** depuis le 2026-07-08 (`gh workflow disable`,
 état `disabled_manually`) : il ne peut plus se déclencher, ni par schedule ni
@@ -81,7 +89,8 @@ planificateur GitHub** garantissent la publication :
    versionnée). Copie **opérationnelle** exécutée : `~/.local/bin/salaf_backup_trigger.sh`
    (hors dossier protégé macOS/TCC — `launchd` ne peut pas lire `~/Desktop`).
    Planifié par `~/Library/LaunchAgents/com.najim.salaf-backup.plist` à 20h30 et
-   22h15 Paris. Chaque soir : si aucun run réussi du jour, déclenche
+   22h15 Paris. Chaque soir : si aucun commit du jour (UTC) sur le tracker — même signal que
+   le garde-fou —, déclenche
    `gh workflow run`. Aucun secret (réutilise le `gh` du trousseau). Log :
    `~/Library/Logs/salaf-backup.log`. Ne marche que si le Mac est allumé le soir.
    - Après modif du script : `cp scripts/backup_trigger.sh ~/.local/bin/salaf_backup_trigger.sh`
@@ -126,6 +135,10 @@ SalafPost, qui émet `INSTAGRAM_ACCESS_TOKEN`) est désactivé. Observé du 21 a
 (réactivation), puis `gh workflow run daily_post.yml` et `daily_reel.yml` si
 rien n'est parti ce jour-là. Pour quitter Facebook sans casser le bot, ajouter
 d'abord un second admin à l'app SalafPost.
+
+### Échéance API Meta — v21.0 expire le 2027-01-21
+`post_salaf.py` et `reels/post_reel.py` appellent `graph.instagram.com/v21.0`
+(changelog Meta lu le 2026-11-14 ; dernière version : v26.0). À migrer avant.
 
 ### Alerte de publication manquante (depuis 2026-10-01)
 Les filets ci-dessus RELANCENT la publication ; `scripts/publish_alert.js`
