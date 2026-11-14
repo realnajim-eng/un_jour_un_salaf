@@ -19,7 +19,7 @@ import json
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ig_publish_common import make_session, renew_token_and_persist, REPO
+from ig_publish_common import make_session, renew_token_and_persist, REPO, IG_API
 
 from build_reel_caption import build_caption
 
@@ -91,7 +91,7 @@ print(f"URL publique : {video_url}")
 
 # ── 3. Créer le container Reel ───────────────────────────────────────────────
 print("Création du container Reel...")
-create = http.post(f"https://graph.instagram.com/v21.0/{USER_ID}/media",
+create = http.post(f"{IG_API}/{USER_ID}/media",
                    data={"media_type": "REELS", "video_url": video_url,
                          "caption": caption, "share_to_feed": "true",
                          "access_token": ACCESS_TOKEN},
@@ -107,7 +107,7 @@ creation_id = create_data["id"]
 print("Attente du traitement de la vidéo...")
 MAX_ATTEMPTS, POLL_DELAY = 40, 10   # jusqu'à ~6,5 min
 for attempt in range(1, MAX_ATTEMPTS + 1):
-    st = http.get(f"https://graph.instagram.com/v21.0/{creation_id}",
+    st = http.get(f"{IG_API}/{creation_id}",
                   params={"fields": "status_code", "access_token": ACCESS_TOKEN},
                   timeout=TIMEOUT)
     status_code = st.json().get("status_code")
@@ -123,7 +123,7 @@ else:
 
 # ── 5. Publier ───────────────────────────────────────────────────────────────
 print("Publication...")
-pub = http.post(f"https://graph.instagram.com/v21.0/{USER_ID}/media_publish",
+pub = http.post(f"{IG_API}/{USER_ID}/media_publish",
                 data={"creation_id": creation_id, "access_token": ACCESS_TOKEN},
                 timeout=TIMEOUT)
 pub_data = pub.json()

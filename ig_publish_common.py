@@ -12,6 +12,11 @@ from nacl import encoding, public
 
 REPO = "realnajim-eng/un_jour_un_salaf"
 
+# Version de l'API Graph utilisée pour publier — UN SEUL endroit à changer.
+# v21.0 expirait le 2027-01-21 ; passage à v26.0 le 2026-11-14 (changelog Meta :
+# https://developers.facebook.com/docs/graph-api/changelog/versions).
+IG_API = "https://graph.instagram.com/v26.0"
+
 
 def make_session():
     session = requests.Session()

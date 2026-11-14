@@ -136,9 +136,9 @@ SalafPost, qui émet `INSTAGRAM_ACCESS_TOKEN`) est désactivé. Observé du 21 a
 rien n'est parti ce jour-là. Pour quitter Facebook sans casser le bot, ajouter
 d'abord un second admin à l'app SalafPost.
 
-### Échéance API Meta — v21.0 expire le 2027-01-21
-`post_salaf.py` et `reels/post_reel.py` appellent `graph.instagram.com/v21.0`
-(changelog Meta lu le 2026-11-14 ; dernière version : v26.0). À migrer avant.
+### Version de l'API Meta — v26.0 (depuis 2026-11-14)
+Constante `IG_API` dans `ig_publish_common.py` (seul endroit à changer). Dates
+d'expiration : developers.facebook.com/docs/graph-api/changelog/versions.
 
 ### Alerte de publication manquante (depuis 2026-10-01)
 Les filets ci-dessus RELANCENT la publication ; `scripts/publish_alert.js`

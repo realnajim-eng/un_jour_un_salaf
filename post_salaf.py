@@ -2,7 +2,7 @@ import os
 import json
 import time
 from generate_image import generate
-from ig_publish_common import make_session, renew_token_and_persist, REPO
+from ig_publish_common import make_session, renew_token_and_persist, REPO, IG_API
 
 ACCESS_TOKEN   = os.environ["INSTAGRAM_ACCESS_TOKEN"]
 USER_ID        = os.environ["INSTAGRAM_USER_ID"]
@@ -104,7 +104,7 @@ print(f"URL publique : {image_url}")
 # ── 4. Créer le container media Instagram ───────────────────────────────────
 print("Création du container Instagram...")
 create_resp = http.post(
-    f"https://graph.instagram.com/v21.0/{USER_ID}/media",
+    f"{IG_API}/{USER_ID}/media",
     data={
         "image_url": image_url,
         "caption": caption,
@@ -126,7 +126,7 @@ MAX_ATTEMPTS = 20      # ~ jusqu'à 100s (20 × 5s)
 POLL_DELAY   = 5
 for attempt in range(1, MAX_ATTEMPTS + 1):
     status_resp = http.get(
-        f"https://graph.instagram.com/v21.0/{creation_id}",
+        f"{IG_API}/{creation_id}",
         params={"fields": "status_code", "access_token": ACCESS_TOKEN},
         timeout=TIMEOUT,
     )
@@ -144,7 +144,7 @@ else:
 # ── 6. Publier ──────────────────────────────────────────────────────────────
 print("Publication...")
 publish_resp = http.post(
-    f"https://graph.instagram.com/v21.0/{USER_ID}/media_publish",
+    f"{IG_API}/{USER_ID}/media_publish",
     data={
         "creation_id": creation_id,
         "access_token": ACCESS_TOKEN,
