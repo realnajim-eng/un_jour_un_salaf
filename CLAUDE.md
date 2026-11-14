@@ -77,7 +77,7 @@ remplacé et **entièrement désactivé** depuis le 2026-07-08 (`gh workflow dis
 état `disabled_manually`) : il ne peut plus se déclencher, ni par schedule ni
 manuellement. Pour le réactiver un jour : `gh workflow enable daily_alternate.yml`
 (mais ne jamais réactiver son schedule → double post). Secrets requis : `INSTAGRAM_ACCESS_TOKEN`,
-`INSTAGRAM_USER_ID`, `INSTAGRAM_CLIENT_SECRET`, `ANTHROPIC_API_KEY`.
+`INSTAGRAM_USER_ID`, `INSTAGRAM_CLIENT_SECRET` (+ `GH_PAT` optionnel).
 
 ### Fiabilisation — horloge externe au planificateur GitHub (depuis 2026-07-08)
 Le planificateur `schedule` de GitHub est best-effort et peut sauter TOUS les

@@ -1,7 +1,6 @@
 import os
 import json
 import random
-import anthropic
 from build_caption import build_caption, clean_source
 
 QUOTES_DB = "quotes_salaf.json"
@@ -45,54 +44,13 @@ if os.path.exists(QUOTES_DB):
     print(f"   Source     : {quote_data['source']}")
     print(f"   Extrait    : {quote_data['quote'][:80]}…")
 
-# ── 2. Fallback : Claude API (si quotes_salaf.json absent) ───────────────────
+# ── 2. Base absente : arrêt net ──────────────────────────────────────────────
+# Règle de rigueur : une parole du Salaf ne vient QUE de la base vérifiée
+# (dorar.net / shamela.ws). On ne génère jamais de citation de mémoire : mieux
+# vaut ne rien publier que publier une parole non authentifiée.
 else:
-    print("⚠️  quotes_salaf.json introuvable — fallback vers Claude API")
-
-    THEMES = [
-        ("الصَّبْر", "patience"), ("الزُّهْد", "zuhd"), ("الْإِخْلَاص", "ikhlas"),
-        ("التَّوَكُّل", "tawakkul"), ("الْخَشْيَة", "khashya"), ("الْعِلْم", "ilm"),
-        ("الْعَمَل الصَّالِح", "amal_salih"), ("الذِّكْر", "dhikr"),
-        ("التَّوْبَة", "tawba"), ("الْوَرَع", "wara"),
-    ]
-    theme_ar, theme_lat = random.choice(THEMES)
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-
-    prompt = f"""Tu es un spécialiste des paroles authentiques des Salaf as-Salih.
-RÈGLES ABSOLUES : cite uniquement une parole réelle des 3 premières générations avec source précise (livre + référence).
-Thème : {theme_ar} ({theme_lat})
-
----JSON---
-{{
-  "name_ar": "...", "name": "...", "generation": "sahabi|tabiʿi|atba",
-  "category": "mawquf|maqtuʿ", "quote_ar": "...", "quote": "traduction française",
-  "source_ar": "...", "source": "...", "theme": "{theme_lat}",
-  "caption": "« [quote] »\\n\\n— [name] (rahimahullah)\\n📖 [source]\\n\\n#{theme_lat} #salaf #sunnah #islam #salafiyyah #ilm #UnJourUnSalaf"
-}}
----END_JSON---"""
-
-    message = client.messages.create(model="claude-sonnet-5", max_tokens=1500,
-        messages=[{"role": "user", "content": prompt}])
-    response = message.content[0].text
-
-    if "---JSON---" in response:
-        start = response.find("---JSON---") + 10
-        end   = response.find("---END_JSON---")
-        raw   = response[start:end].strip()
-    elif "```json" in response:
-        start = response.find("```json") + 7
-        end   = response.find("```", start)
-        raw   = response[start:end].strip()
-    else:
-        raw = response.strip()
-
-    try:
-        quote_data = json.loads(raw)
-    except json.JSONDecodeError as e:
-        print(f"⚠️  Réponse Claude non parsable : {e}")
-        print(f"   Réponse brute :\n{response}")
-        raise SystemExit("Échec du fallback Claude — citation introuvable")
-    print(f"✅ Citation générée via Claude API (thème : {theme_ar})")
+    raise SystemExit(f"❌ {QUOTES_DB} introuvable — aucune citation vérifiée "
+                     "disponible, publication annulée.")
 
 # ── 3. Épurer la source (ouvrage seul) + régénérer la légende ────────────────
 # On ne garde que l'ouvrage dans la source (site et chapitre retirés), pour

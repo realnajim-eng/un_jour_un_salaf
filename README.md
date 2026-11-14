@@ -15,10 +15,10 @@ deux contenus indépendants :
 `.github/workflows/daily_post.yml` exécute :
 
 1. **`fetch_caption.py`** — choisit une citation dans `quotes_salaf.json`
-   (150 paroles, source [dorar.net](https://dorar.net)), en évitant les
+   (229 paroles, source [dorar.net](https://dorar.net)), en évitant les
    répétitions grâce à `tracker.json`, et écrit `daily_quote.json`.
-   *Fallback :* si `quotes_salaf.json` est absent, une citation est générée via
-   l'API Claude.
+   Si `quotes_salaf.json` est absent, le script s'arrête sans rien publier :
+   aucune citation n'est jamais générée de mémoire.
 2. **`post_salaf.py`** —
    - renouvelle automatiquement le token Instagram (valable 60 jours) et met à
      jour le secret GitHub correspondant ;
@@ -85,7 +85,6 @@ voir [`CLAUDE.md`](CLAUDE.md).
 | `INSTAGRAM_ACCESS_TOKEN`    | Token longue durée (renouvelé automatiquement)             |
 | `INSTAGRAM_USER_ID`         | Identifiant du compte Instagram professionnel              |
 | `INSTAGRAM_CLIENT_SECRET`   | Secret de l'app Meta (pour l'échange de token)             |
-| `ANTHROPIC_API_KEY`         | Clé API Claude (légende + fallback de génération)          |
 | `GH_PAT`                    | *Optionnel* — PAT avec droit `Secrets: read & write`, pour persister le token Instagram renouvelé (sinon le `GITHUB_TOKEN` automatique est utilisé, sans ce droit) |
 
 > `GITHUB_TOKEN` est fourni automatiquement par GitHub Actions.
